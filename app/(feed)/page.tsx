@@ -12,6 +12,7 @@ import {
   Users,
 } from 'lucide-react';
 
+import { auth } from '@/auth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -102,7 +103,15 @@ const trendingTopics = [
   { title: '#afterhours', volume: '9.9K posts' },
 ];
 
-export default function FeedPage() {
+export default async function FeedPage() {
+  const session = await auth();
+  const user = session?.user;
+  const displayName = user?.name ?? 'Explorer';
+  const firstName = displayName.split(' ')[0] ?? displayName;
+  const initials =
+    `${displayName.charAt(0)}${displayName.split(' ')[1]?.charAt(0) ?? ''}`.trim().toUpperCase() ||
+    'SP';
+
   return (
     <div className="grid gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
       <div className="flex flex-col gap-6">
@@ -110,11 +119,14 @@ export default function FeedPage() {
           <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
               <Avatar className="h-12 w-12 border-primary/40">
-                <AvatarImage src="https://i.pravatar.cc/150?img=67" alt="You" />
-                <AvatarFallback>JV</AvatarFallback>
+                {user?.image ? (
+                  <AvatarImage src={user.image} alt={displayName} />
+                ) : (
+                  <AvatarFallback>{initials}</AvatarFallback>
+                )}
               </Avatar>
               <div>
-                <CardTitle className="text-xl">Welcome back, Jasmine</CardTitle>
+                <CardTitle className="text-xl">Welcome back, {firstName}</CardTitle>
                 <CardDescription>
                   Share a moment with your circle or discover what friends captured today.
                 </CardDescription>

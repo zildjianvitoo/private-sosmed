@@ -60,10 +60,12 @@ Phase 1 introduces an aurora-inspired palette (indigo primary with aqua accents)
 
 ### Phase 2 – Auth & User Model
 
-1. Initialize Prisma with SQLite (`npx prisma init --datasource-provider sqlite`).
-2. Define `User` schema, run migration, seed developer accounts.
-3. Wire NextAuth credential provider using Prisma adapter; add registration API + form with Zod validation.
-4. Protect authenticated routes with middleware, redirect unauthenticated users to `/login`.
+- [x] Initialize Prisma with SQLite (`npx prisma init --datasource-provider sqlite`).
+- [x] Define `User` schema, baseline migration, and seed developer accounts.
+- [x] Wire NextAuth credential provider using Prisma adapter; add registration API + form with Zod validation.
+- [x] Protect authenticated routes with middleware, redirect unauthenticated users to `/login`.
+
+Phase 2 adds Prisma schema + baseline migration SQL (`prisma/migrations/0001_init/`), a seed script for `demo@sosmed.local` (`npm run db:seed`), credential-based NextAuth setup (`auth.config.ts`, `/api/auth/register`), React Query + Session providers in the app shell, and guarded routes via `middleware.ts` with login/register flows under `app/(auth)`. Fresh environments can run `npm run db:migrate && npm run db:seed` to materialise the auth schema locally.
 
 ### Phase 3 – Social Graph
 

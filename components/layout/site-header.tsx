@@ -2,8 +2,9 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { Bell, Menu, Plus, Search } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import { signOut, useSession } from 'next-auth/react';
+import { Bell, LogOut, Menu, Plus, Search } from 'lucide-react';
 
 import { ThemeToggle } from '@/components/theme/theme-toggle';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -31,6 +32,32 @@ const navigation = [
 export function SiteHeader() {
   const pathname = usePathname();
   const [open, setOpen] = React.useState(false);
+  const router = useRouter();
+  const { data: session } = useSession();
+  const user = session?.user;
+  const displayName = user?.name ?? 'Member';
+  const handle = user?.handle
+    ? `@${user.handle}`
+    : user?.email
+      ? `@${user.email.split('@')[0]}`
+      : '@member';
+
+  const initials = React.useMemo(() => {
+    if (displayName) {
+      const [first, second] = displayName.split(' ');
+      return `${first?.charAt(0) ?? ''}${second?.charAt(0) ?? ''}`.toUpperCase() || 'SP';
+    }
+    if (user?.email) {
+      return user.email.charAt(0).toUpperCase();
+    }
+    return 'SP';
+  }, [displayName, user?.email]);
+
+  const handleSignOut = async () => {
+    await signOut({ redirect: false });
+    router.push('/login');
+    router.refresh();
+  };
 
   const renderNavLinks = (variant: 'desktop' | 'mobile' = 'desktop') => (
     <nav
@@ -150,12 +177,15 @@ export function SiteHeader() {
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-2 py-1.5 pl-1 pr-3 text-left shadow-sm transition hover:border-primary/50">
                   <Avatar className="h-9 w-9">
-                    <AvatarImage src="https://i.pravatar.cc/100?img=5" alt="Profile" />
-                    <AvatarFallback>JV</AvatarFallback>
+                    {user?.image ? (
+                      <AvatarImage src={user.image} alt={displayName} />
+                    ) : (
+                      <AvatarFallback>{initials}</AvatarFallback>
+                    )}
                   </Avatar>
                   <div className="hidden text-sm sm:flex sm:flex-col">
-                    <span className="font-semibold text-foreground">Jasmine Vito</span>
-                    <span className="text-xs text-muted-foreground">@jasminev</span>
+                    <span className="font-semibold text-foreground">{displayName}</span>
+                    <span className="text-xs text-muted-foreground">{handle}</span>
                   </div>
                 </button>
               </DropdownMenuTrigger>
@@ -172,7 +202,9 @@ export function SiteHeader() {
                   <Link href="/billing">Billing</Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>Sign out</DropdownMenuItem>
+                <DropdownMenuItem onSelect={handleSignOut} className="flex items-center gap-2">
+                  <LogOut className="h-4 w-4" /> Sign out
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
