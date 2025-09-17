@@ -2,7 +2,7 @@
 
 ## Objective
 
-Create a responsive Next.js 14 application (TypeScript) that allows users to manage basic profiles, add friends, and upload/share photos. The UI should follow Tailwind CSS design tokens with shadcn/ui components, and data should sync via React Query against a SQLite-backed API layer.
+Create a responsive Next.js 15 application (TypeScript) that allows users to manage basic profiles, add friends, and upload/share photos. The UI should follow Tailwind CSS design tokens with shadcn/ui components, and data should sync via React Query against a SQLite-backed API layer.
 
 ## Functional Requirements
 
@@ -52,9 +52,11 @@ Phase 0 deliverables live under `package.json` scripts, `.husky/pre-commit`, `.e
 
 ### Phase 1 – UI Foundation
 
-1. Verify Tailwind setup; extend theme tokens for brand colors, typography, and breakpoints.
-2. Install shadcn generator; scaffold reusable components (Button, Input, Dialog, Avatar, Skeleton, Tabs).
-3. Build responsive shell: navigation bar (logo, notifications, profile dropdown), `app/(auth)` grouping for auth pages, `app/(feed)` for main experience.
+- [x] Verify Tailwind setup; extend theme tokens for brand colors, typography, and breakpoints.
+- [x] Install shadcn generator; scaffold reusable components (Button, Input, Dialog, Avatar, Skeleton, Tabs).
+- [x] Build responsive shell: navigation bar (logo, notifications, profile dropdown), `app/(auth)` grouping for auth pages, `app/(feed)` for main experience.
+
+Phase 1 introduces an aurora-inspired palette (indigo primary with aqua accents), tailwind 4 tokenisation via `@theme`, shadcn UI scaffolding under `components/ui`, and a responsive feed shell composed with `SiteHeader`, `ThemeToggle`, and `Card` primitives.
 
 ### Phase 2 – Auth & User Model
 

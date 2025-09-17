@@ -1,26 +1,133 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: light;
+  --background: #f7f9fc;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  --primary: #635bff;
+  --primary-foreground: #ffffff;
+  --secondary: #e4e7ff;
+  --secondary-foreground: #1e1b4b;
+  --muted: #e2e8f0;
+  --muted-foreground: #5f6b7f;
+  --accent: #d0f5ff;
+  --accent-foreground: #0f172a;
+  --destructive: #f87171;
+  --destructive-foreground: #ffffff;
+  --border: #d8def2;
+  --input: #d8def2;
+  --ring: #b3b8ff;
+  --radius: 0.85rem;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 0.25rem);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 0.25rem);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    color-scheme: dark;
+    --background: #05060a;
+    --foreground: #eff1ff;
+    --card: rgba(11, 13, 23, 0.9);
+    --card-foreground: #eff1ff;
+    --popover: rgba(11, 13, 23, 0.95);
+    --popover-foreground: #eff1ff;
+    --primary: #8180ff;
+    --primary-foreground: #05060a;
+    --secondary: rgba(86, 96, 166, 0.45);
+    --secondary-foreground: #e1e6ff;
+    --muted: rgba(30, 41, 59, 0.75);
+    --muted-foreground: #cbd5f5;
+    --accent: rgba(56, 189, 248, 0.25);
+    --accent-foreground: #e0f2ff;
+    --destructive: #fb7185;
+    --destructive-foreground: #081017;
+    --border: rgba(129, 140, 248, 0.22);
+    --input: rgba(129, 140, 248, 0.22);
+    --ring: rgba(129, 140, 248, 0.48);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+:root[data-theme='light'] {
+  color-scheme: light;
+  --background: #f7f9fc;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  --primary: #635bff;
+  --primary-foreground: #ffffff;
+  --secondary: #e4e7ff;
+  --secondary-foreground: #1e1b4b;
+  --muted: #e2e8f0;
+  --muted-foreground: #5f6b7f;
+  --accent: #d0f5ff;
+  --accent-foreground: #0f172a;
+  --destructive: #f87171;
+  --destructive-foreground: #ffffff;
+  --border: #d8def2;
+  --input: #d8def2;
+  --ring: #b3b8ff;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --background: #05060a;
+  --foreground: #eff1ff;
+  --card: rgba(11, 13, 23, 0.9);
+  --card-foreground: #eff1ff;
+  --popover: rgba(11, 13, 23, 0.95);
+  --popover-foreground: #eff1ff;
+  --primary: #8180ff;
+  --primary-foreground: #05060a;
+  --secondary: rgba(86, 96, 166, 0.45);
+  --secondary-foreground: #e1e6ff;
+  --muted: rgba(30, 41, 59, 0.75);
+  --muted-foreground: #cbd5f5;
+  --accent: rgba(56, 189, 248, 0.25);
+  --accent-foreground: #e0f2ff;
+  --destructive: #fb7185;
+  --destructive-foreground: #081017;
+  --border: rgba(129, 140, 248, 0.22);
+  --input: rgba(129, 140, 248, 0.22);
+  --ring: rgba(129, 140, 248, 0.48);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased min-h-screen font-sans;
+  }
 }
