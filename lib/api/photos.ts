@@ -4,6 +4,7 @@ export interface FeedPhoto {
   filePath: string;
   createdAt: string;
   relativeCreatedAt: string;
+  fileUrl: string;
   owner: {
     id: string;
     displayName: string;

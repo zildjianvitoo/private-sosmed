@@ -91,12 +91,11 @@ export function FeedTimeline({ initialPage }: FeedTimelineProps) {
             </div>
             <div className="relative aspect-[4/3] w-full overflow-hidden">
               <Image
-                src={`/${photo.filePath}`}
+                src={photo.fileUrl}
                 alt={photo.caption ?? 'Uploaded photo'}
                 fill
                 className="object-cover"
                 sizes="(min-width: 1024px) 720px, 100vw"
-                unoptimized
               />
             </div>
             <CardFooter className="p-6">

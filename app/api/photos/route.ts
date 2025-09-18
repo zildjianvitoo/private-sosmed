@@ -4,10 +4,8 @@ import path from 'path';
 
 import { auth } from '@/auth';
 import prisma, { getPhotoClient } from '@/lib/prisma';
-import type { Prisma } from '@prisma/client';
-import type { FeedPhoto } from '@/lib/api/photos';
 import { ensureUploadsDir, generateUploadFileName, getPublicPath } from '@/lib/uploads';
-import { formatRelativeTime } from '@/lib/time';
+import { serializePhoto, photoUserSelect } from '@/lib/serializers/photo';
 
 export const runtime = 'nodejs';
 
@@ -38,7 +36,7 @@ export async function GET(request: Request) {
       : {}),
     orderBy: { createdAt: 'desc' },
     include: {
-      owner: { select: userSummarySelect },
+      owner: { select: photoUserSelect },
     },
   });
 
@@ -99,24 +97,9 @@ export async function POST(request: Request) {
       filePath: getPublicPath(fileName),
     },
     include: {
-      owner: { select: userSummarySelect },
+      owner: { select: photoUserSelect },
     },
   });
 
   return NextResponse.json({ photo: serializePhoto(photo) }, { status: 201 });
-}
-
-type PhotoWithOwner = Prisma.PhotoGetPayload<{
-  include: { owner: { select: typeof userSummarySelect } };
-}>;
-
-function serializePhoto(photo: PhotoWithOwner): FeedPhoto {
-  return {
-    id: photo.id,
-    caption: photo.caption,
-    filePath: photo.filePath,
-    createdAt: photo.createdAt.toISOString(),
-    relativeCreatedAt: `${formatRelativeTime(photo.createdAt)} ago`,
-    owner: photo.owner,
-  };
 }

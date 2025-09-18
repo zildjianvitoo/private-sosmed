@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { formatRelativeTime } from '@/lib/time';
+import { serializePhoto, photoUserSelect } from '@/lib/serializers/photo';
 
 const userSummarySelect = {
   id: true,
@@ -44,7 +44,7 @@ export default async function FeedPage() {
     take: PAGE_SIZE + 1,
     orderBy: { createdAt: 'desc' },
     include: {
-      owner: { select: userSummarySelect },
+      owner: { select: photoUserSelect },
     },
   });
 
@@ -55,14 +55,7 @@ export default async function FeedPage() {
   }
 
   const initialPage = {
-    photos: photos.map((photo) => ({
-      id: photo.id,
-      caption: photo.caption,
-      filePath: photo.filePath,
-      createdAt: photo.createdAt.toISOString(),
-      relativeCreatedAt: `${formatRelativeTime(photo.createdAt)} ago`,
-      owner: photo.owner,
-    })),
+    photos: photos.map(serializePhoto),
     nextCursor,
   };
 
