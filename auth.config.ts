@@ -49,7 +49,18 @@ const authConfig = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
+      if (trigger === 'update' && session) {
+        if (session.name) {
+          token.name = session.name;
+        }
+        if ((session as unknown as { picture?: string }).picture !== undefined) {
+          token.picture = (session as unknown as { picture?: string }).picture ?? null;
+        }
+        if ((session as unknown as { handle?: string }).handle !== undefined) {
+          token.handle = (session as unknown as { handle?: string }).handle ?? null;
+        }
+      }
       if (user) {
         token.id = user.id;
         token.name = user.name ?? token.name;
@@ -67,12 +78,13 @@ const authConfig = {
         if (token.name) {
           session.user.name = token.name as string;
         }
-        if (token.picture) {
-          session.user.image = token.picture as string;
+        if ('picture' in token) {
+          (session.user as typeof session.user & { image?: string | null }).image =
+            (token.picture as string | null) ?? null;
         }
-        if (token.handle) {
-          (session.user as typeof session.user & { handle?: string }).handle =
-            token.handle as string;
+        if ('handle' in token) {
+          (session.user as typeof session.user & { handle?: string | null }).handle =
+            (token.handle as string | null) ?? null;
         }
       }
       return session;

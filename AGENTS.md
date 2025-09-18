@@ -80,6 +80,8 @@ Phase 2 adds Prisma schema + baseline migration SQL (`prisma/migrations/0001_ini
 
 Phase 3 delivers a dedicated friends dashboard (`app/friends/page.tsx`) with React Query-powered mutations, new REST endpoints under `/api/friend-requests`, `/api/friends`, and `/api/users/search`, plus SQLite schema additions (`prisma/migrations/0002_social_graph/`). Seed data now provisions demo accounts with pre-populated friendships/requests (`npm run db:seed`).
 
+Suggested connections now filter out existing friends and rank prospects by mutual connections, ensuring the module surfaces genuinely new people to follow.
+
 ### Phase 4 – Media Upload & Feed
 
 - [x] Add `Photo` schema with owner relation; store file path + caption.
@@ -89,6 +91,8 @@ Phase 3 delivers a dedicated friends dashboard (`app/friends/page.tsx`) with Rea
 - [x] Build React Query hooks/components for upload form (with optimistic preview) and infinite feed list using shadcn cards.
 
 Phase 4 ships local media uploads via `/api/photos` with validation, the Prisma-backed `Photo` model/migration (`prisma/migrations/0003_media_feed/`), seeded sample photos stored under `public/uploads/`, and a React Query powered feed (`FeedTimeline`) with client-side pagination plus a `PostComposer` handling uploads. Image resizing is deferred for a future enhancement.
+
+The `/profile` settings page lets members update display name, handle, bio, and avatar with shadcn forms hitting `/api/profile`.
 
 ### Phase 5 – Notifications & Polish
 

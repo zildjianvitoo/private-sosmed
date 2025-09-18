@@ -11,14 +11,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { serializePhoto, photoUserSelect } from '@/lib/serializers/photo';
 
-const userSummarySelect = {
-  id: true,
-  displayName: true,
-  handle: true,
-  image: true,
-  bio: true,
-};
-
 const trendingTopics = [
   { title: '#twilightsessions', volume: '18.4K posts' },
   { title: '#glassandsteel', volume: '12.1K posts' },
@@ -59,12 +51,89 @@ export default async function FeedPage() {
     nextCursor,
   };
 
-  const suggestions = await prisma.user.findMany({
-    where: user?.id ? { id: { not: user.id } } : undefined,
-    select: userSummarySelect,
-    take: 3,
-    orderBy: { createdAt: 'desc' },
-  });
+  let suggestions: Array<{
+    id: string;
+    displayName: string;
+    handle: string | null;
+    image: string | null;
+    bio: string | null;
+    mutualCount: number;
+  }> = [];
+
+  if (user?.id) {
+    const friendships = await prisma.friendship.findMany({
+      where: {
+        OR: [{ userAId: user.id }, { userBId: user.id }],
+      },
+      select: {
+        userAId: true,
+        userBId: true,
+      },
+    });
+
+    const friendIds = new Set<string>();
+    friendships.forEach((friendship) => {
+      const friendId = friendship.userAId === user.id ? friendship.userBId : friendship.userAId;
+      friendIds.add(friendId);
+    });
+
+    const candidateUsers = await prisma.user.findMany({
+      where: {
+        id: {
+          notIn: [user.id, ...Array.from(friendIds)],
+        },
+      },
+      select: {
+        id: true,
+        displayName: true,
+        handle: true,
+        image: true,
+        bio: true,
+        friendshipsA: {
+          select: {
+            userBId: true,
+          },
+        },
+        friendshipsB: {
+          select: {
+            userAId: true,
+          },
+        },
+      },
+      take: 25,
+    });
+
+    suggestions = candidateUsers
+      .map((candidate) => {
+        const candidateFriends = new Set<string>();
+        candidate.friendshipsA.forEach((f) => candidateFriends.add(f.userBId));
+        candidate.friendshipsB.forEach((f) => candidateFriends.add(f.userAId));
+
+        let mutualCount = 0;
+        candidateFriends.forEach((friendId) => {
+          if (friendIds.has(friendId)) {
+            mutualCount += 1;
+          }
+        });
+
+        return {
+          id: candidate.id,
+          displayName: candidate.displayName,
+          handle: candidate.handle,
+          image: candidate.image,
+          bio: candidate.bio,
+          mutualCount,
+        };
+      })
+      .filter((candidate) => candidate.mutualCount > 0)
+      .sort((a, b) => {
+        if (b.mutualCount !== a.mutualCount) {
+          return b.mutualCount - a.mutualCount;
+        }
+        return a.displayName.localeCompare(b.displayName);
+      })
+      .slice(0, 3);
+  }
 
   return (
     <div className="grid gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
@@ -144,6 +213,10 @@ export default async function FeedPage() {
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {suggestion.handle ?? 'Private profile'}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {suggestion.mutualCount} mutual connection
+                      {suggestion.mutualCount === 1 ? '' : 's'}
                     </p>
                   </div>
                 </div>
