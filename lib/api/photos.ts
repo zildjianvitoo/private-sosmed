@@ -3,6 +3,7 @@ export interface FeedPhoto {
   caption: string | null;
   filePath: string;
   createdAt: string;
+  relativeCreatedAt: string;
   owner: {
     id: string;
     displayName: string;

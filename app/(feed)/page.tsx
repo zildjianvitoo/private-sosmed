@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { formatRelativeTime } from '@/lib/time';
 
 const userSummarySelect = {
   id: true,
@@ -59,6 +60,7 @@ export default async function FeedPage() {
       caption: photo.caption,
       filePath: photo.filePath,
       createdAt: photo.createdAt.toISOString(),
+      relativeCreatedAt: `${formatRelativeTime(photo.createdAt)} ago`,
       owner: photo.owner,
     })),
     nextCursor,

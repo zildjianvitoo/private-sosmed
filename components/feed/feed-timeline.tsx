@@ -17,7 +17,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { formatRelativeTime } from '@/lib/time';
 import { fetchPhotos, FeedPageData, FeedPhoto } from '@/lib/api/photos';
 
 interface FeedTimelineProps {
@@ -111,7 +110,7 @@ export function FeedTimeline({ initialPage }: FeedTimelineProps) {
                   <Share2 className="h-4 w-4" />
                 </button>
               </div>
-              <Badge variant="muted">{formatRelativeTime(new Date(photo.createdAt))} ago</Badge>
+              <Badge variant="muted">{photo.relativeCreatedAt}</Badge>
             </CardFooter>
           </Card>
         );

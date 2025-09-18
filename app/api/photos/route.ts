@@ -4,7 +4,10 @@ import path from 'path';
 
 import { auth } from '@/auth';
 import prisma, { getPhotoClient } from '@/lib/prisma';
+import type { Prisma } from '@prisma/client';
+import type { FeedPhoto } from '@/lib/api/photos';
 import { ensureUploadsDir, generateUploadFileName, getPublicPath } from '@/lib/uploads';
+import { formatRelativeTime } from '@/lib/time';
 
 export const runtime = 'nodejs';
 
@@ -46,7 +49,7 @@ export async function GET(request: Request) {
   }
 
   return NextResponse.json({
-    photos,
+    photos: photos.map(serializePhoto),
     nextCursor,
   });
 }
@@ -100,5 +103,20 @@ export async function POST(request: Request) {
     },
   });
 
-  return NextResponse.json({ photo }, { status: 201 });
+  return NextResponse.json({ photo: serializePhoto(photo) }, { status: 201 });
+}
+
+type PhotoWithOwner = Prisma.PhotoGetPayload<{
+  include: { owner: { select: typeof userSummarySelect } };
+}>;
+
+function serializePhoto(photo: PhotoWithOwner): FeedPhoto {
+  return {
+    id: photo.id,
+    caption: photo.caption,
+    filePath: photo.filePath,
+    createdAt: photo.createdAt.toISOString(),
+    relativeCreatedAt: `${formatRelativeTime(photo.createdAt)} ago`,
+    owner: photo.owner,
+  };
 }
