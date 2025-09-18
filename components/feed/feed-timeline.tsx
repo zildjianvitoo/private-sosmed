@@ -18,52 +18,16 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { formatRelativeTime } from '@/lib/time';
-
-export interface FeedPhoto {
-  id: string;
-  caption: string | null;
-  filePath: string;
-  createdAt: string;
-  owner: {
-    id: string;
-    displayName: string;
-    handle: string | null;
-    image: string | null;
-    bio: string | null;
-  };
-}
-
-interface FeedPageData {
-  photos: FeedPhoto[];
-  nextCursor: string | null;
-}
+import { fetchPhotos, FeedPageData, FeedPhoto } from '@/lib/api/photos';
 
 interface FeedTimelineProps {
   initialPage: FeedPageData;
 }
 
-async function fetchPhotos({ pageParam }: { pageParam?: string }) {
-  const url = new URL('/api/photos', window.location.origin);
-  if (pageParam) {
-    url.searchParams.set('cursor', pageParam);
-  }
-
-  const response = await fetch(url.toString(), {
-    method: 'GET',
-    cache: 'no-store',
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to load photos');
-  }
-
-  return (await response.json()) as FeedPageData;
-}
-
 export function FeedTimeline({ initialPage }: FeedTimelineProps) {
   const query = useInfiniteQuery({
     queryKey: ['photos'],
-    queryFn: fetchPhotos,
+    queryFn: ({ pageParam }: { pageParam?: string }) => fetchPhotos(pageParam),
     initialData: {
       pageParams: [undefined],
       pages: [initialPage],

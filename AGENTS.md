@@ -108,6 +108,7 @@ Phase 4 ships local media uploads via `/api/photos` with validation, the Prisma-
 ## Suggested Workflow Practices
 
 - Commit and push after completing each task, using concise conventional commit messages (e.g., `feat: add friend request flow`).
+- Centralize fetch/service logic under `lib/api/` modules so components stay declarative and reuse consistent request helpers.
 - Track upcoming tasks in `docs/backlog.md` or tickets rather than expanding this file indefinitely.
 - Update this roadmap after major milestones; archive completed phases with dates for historical context.
 - Keep design decisions and schema changes summarized in ADRs under `docs/adr/` when choices become complex.

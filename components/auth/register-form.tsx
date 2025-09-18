@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert } from '@/components/ui/alert';
+import { registerUser } from '@/lib/api/auth';
 
 const registerSchema = z.object({
   email: z.string().email('Provide a valid email'),
@@ -19,23 +20,6 @@ const registerSchema = z.object({
 });
 
 export type RegisterFormValues = z.infer<typeof registerSchema>;
-
-async function registerUser(values: RegisterFormValues) {
-  const response = await fetch('/api/auth/register', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(values),
-  });
-
-  if (!response.ok) {
-    const data = await response.json().catch(() => ({}));
-    throw new Error(data.error ?? 'Unable to create account');
-  }
-
-  return response.json();
-}
 
 export function RegisterForm() {
   const router = useRouter();

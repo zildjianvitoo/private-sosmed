@@ -9,70 +9,30 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-
-interface UserSummary {
-  id: string;
-  displayName: string;
-  handle: string | null;
-  image: string | null;
-  bio: string | null;
-}
-
-interface FriendSummary extends UserSummary {
-  since: string;
-}
-
-interface PendingRequest {
-  id: string;
-  createdAt?: string;
-  requester?: UserSummary;
-  recipient?: UserSummary;
-}
-
-interface SearchResult extends UserSummary {
-  status: 'FRIEND' | 'PENDING' | 'INCOMING' | 'NONE';
-}
+import {
+  cancelRequest,
+  FriendSummary,
+  getFriendRequests,
+  getFriends,
+  PendingRequest,
+  respondToRequest,
+  searchUsers,
+  SearchResult,
+  sendFriendRequest,
+  UserSummary,
+} from '@/lib/api/friends';
 
 interface FriendsDashboardProps {
   currentUser: {
     id: string;
     displayName: string;
     handle: string | null;
+    image: string | null;
   };
   initialFriends: FriendSummary[];
   initialIncoming: PendingRequest[];
   initialOutgoing: PendingRequest[];
   initialSuggestions: SearchResult[];
-}
-
-async function fetchFriendRequests() {
-  const response = await fetch('/api/friend-requests', { cache: 'no-store' });
-  if (!response.ok) {
-    throw new Error('Failed to load friend requests');
-  }
-  return response.json() as Promise<{
-    incoming: PendingRequest[];
-    outgoing: PendingRequest[];
-  }>;
-}
-
-async function fetchFriends() {
-  const response = await fetch('/api/friends', { cache: 'no-store' });
-  if (!response.ok) {
-    throw new Error('Failed to load friends');
-  }
-  return response.json() as Promise<{ friends: FriendSummary[] }>;
-}
-
-async function searchUsers(query: string) {
-  const response = await fetch(`/api/users/search?q=${encodeURIComponent(query)}`, {
-    cache: 'no-store',
-  });
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.error ?? 'Search failed');
-  }
-  return response.json() as Promise<{ results: SearchResult[] }>;
 }
 
 export function FriendsDashboard({
@@ -90,31 +50,18 @@ export function FriendsDashboard({
 
   const friendRequestsQuery = useQuery({
     queryKey: ['friendRequests'],
-    queryFn: fetchFriendRequests,
+    queryFn: getFriendRequests,
     initialData: { incoming: initialIncoming, outgoing: initialOutgoing },
   });
 
   const friendsQuery = useQuery({
     queryKey: ['friends'],
-    queryFn: fetchFriends,
+    queryFn: getFriends,
     initialData: { friends: initialFriends },
   });
 
   const sendRequestMutation = useMutation({
-    mutationFn: async (recipientId: string) => {
-      const response = await fetch('/api/friend-requests', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ recipientId }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json().catch(() => ({}));
-        throw new Error(error.error ?? 'Unable to send request');
-      }
-
-      return response.json();
-    },
+    mutationFn: sendFriendRequest,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['friendRequests'] });
       setSearchError(null);
@@ -125,20 +72,8 @@ export function FriendsDashboard({
   });
 
   const respondToRequestMutation = useMutation({
-    mutationFn: async ({ id, action }: { id: string; action: 'accept' | 'decline' }) => {
-      const response = await fetch(`/api/friend-requests/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json().catch(() => ({}));
-        throw new Error(error.error ?? 'Unable to update request');
-      }
-
-      return response.json();
-    },
+    mutationFn: ({ id, action }: { id: string; action: 'accept' | 'decline' }) =>
+      respondToRequest(id, action),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['friendRequests'] });
       queryClient.invalidateQueries({ queryKey: ['friends'] });
@@ -149,18 +84,7 @@ export function FriendsDashboard({
   });
 
   const cancelRequestMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const response = await fetch(`/api/friend-requests/${id}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        const error = await response.json().catch(() => ({}));
-        throw new Error(error.error ?? 'Unable to cancel request');
-      }
-
-      return response.json();
-    },
+    mutationFn: cancelRequest,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['friendRequests'] });
     },

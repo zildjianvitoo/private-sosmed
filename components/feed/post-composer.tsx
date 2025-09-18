@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
+import { uploadPhoto } from '@/lib/api/photos';
 
 interface PostComposerProps {
   currentUser: {
@@ -42,17 +43,7 @@ export function PostComposer({ currentUser }: PostComposerProps) {
         formData.append('caption', caption.trim());
       }
 
-      const response = await fetch('/api/photos', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
-        throw new Error(data.error ?? 'Failed to upload photo');
-      }
-
-      return response.json();
+      return uploadPhoto(formData);
     },
     onSuccess: () => {
       setCaption('');
