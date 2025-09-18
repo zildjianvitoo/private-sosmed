@@ -65,9 +65,11 @@ const authConfig = {
         token.id = user.id;
         token.name = user.name ?? token.name;
         token.email = user.email ?? token.email;
-        token.picture = user.image ?? token.picture;
+        if (user.image) {
+          token.picture = user.image.startsWith('/') ? user.image : `/${user.image}`;
+        }
         if ('handle' in user && user.handle) {
-          token.handle = user.handle;
+          token.handle = user.handle.toLowerCase();
         }
       }
       return token;
@@ -79,8 +81,9 @@ const authConfig = {
           session.user.name = token.name as string;
         }
         if ('picture' in token) {
+          const picture = (token.picture as string | null) ?? null;
           (session.user as typeof session.user & { image?: string | null }).image =
-            (token.picture as string | null) ?? null;
+            picture && !picture.startsWith('/') ? `/${picture}` : picture;
         }
         if ('handle' in token) {
           (session.user as typeof session.user & { handle?: string | null }).handle =
