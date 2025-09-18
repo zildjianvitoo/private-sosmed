@@ -1,7 +1,35 @@
 import { PrismaClient } from '@prisma/client';
 import { hash } from 'bcryptjs';
+import { access, mkdir, writeFile } from 'fs/promises';
+import path from 'path';
 
 const prisma = new PrismaClient();
+const uploadsDir = path.join(process.cwd(), 'public/uploads');
+
+async function ensureUploadsDir() {
+  await mkdir(uploadsDir, { recursive: true });
+}
+
+async function saveImageFromUrl(url: string, fileName: string) {
+  await ensureUploadsDir();
+  const target = path.join(uploadsDir, fileName);
+
+  try {
+    await access(target);
+    return `uploads/${fileName}`;
+  } catch {
+    // File doesn't exist yet, download it.
+  }
+
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to download ${url}: ${response.status}`);
+  }
+
+  const buffer = Buffer.from(await response.arrayBuffer());
+  await writeFile(target, buffer);
+  return `uploads/${fileName}`;
+}
 
 async function upsertUser({
   email,
@@ -124,6 +152,48 @@ async function main() {
       recipientId: arya.id,
     },
   });
+
+  const samplePhotos = [
+    {
+      id: 'photo-demo-sunrise',
+      ownerId: demo.id,
+      caption: 'Golden hour at the boardwalk.',
+      url: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80',
+      fileName: 'demo-sunrise.jpg',
+    },
+    {
+      id: 'photo-kai-architecture',
+      ownerId: kai.id,
+      caption: 'Neon reflections downtown.',
+      url: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1600&q=80',
+      fileName: 'kai-neon.jpg',
+    },
+    {
+      id: 'photo-mira-portrait',
+      ownerId: mira.id,
+      caption: 'Cinematic portrait study.',
+      url: 'https://images.unsplash.com/photo-1487412912498-0447578fcca8?auto=format&fit=crop&w=1600&q=80',
+      fileName: 'mira-portrait.jpg',
+    },
+  ];
+
+  for (const sample of samplePhotos) {
+    const filePath = await saveImageFromUrl(sample.url, sample.fileName);
+    await prisma.photo.upsert({
+      where: { id: sample.id },
+      update: {
+        ownerId: sample.ownerId,
+        caption: sample.caption,
+        filePath,
+      },
+      create: {
+        id: sample.id,
+        ownerId: sample.ownerId,
+        caption: sample.caption,
+        filePath,
+      },
+    });
+  }
 }
 
 main()

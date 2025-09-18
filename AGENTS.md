@@ -82,11 +82,13 @@ Phase 3 delivers a dedicated friends dashboard (`app/friends/page.tsx`) with Rea
 
 ### Phase 4 – Media Upload & Feed
 
-1. Add `Photo` schema with owner relation; store file path + caption.
-2. Configure upload handler (Next.js Route Handler with FormData) writing to `public/uploads` (local) and returning metadata; ensure file type/size validation.
-3. Add image processing step (optional: sharp for resizing thumbnails).
-4. Build feed API returning paginated photo cards (cursor-based on `createdAt`).
-5. Build React Query hooks/components for upload form (with optimistic preview) and infinite feed list using shadcn cards.
+- [x] Add `Photo` schema with owner relation; store file path + caption.
+- [x] Configure upload handler (Next.js Route Handler with FormData) writing to `public/uploads` (local) and returning metadata; ensure file type/size validation.
+- [ ] Add image processing step (optional: sharp for resizing thumbnails).
+- [x] Build feed API returning paginated photo cards (cursor-based on `createdAt`).
+- [x] Build React Query hooks/components for upload form (with optimistic preview) and infinite feed list using shadcn cards.
+
+Phase 4 ships local media uploads via `/api/photos` with validation, the Prisma-backed `Photo` model/migration (`prisma/migrations/0003_media_feed/`), seeded sample photos stored under `public/uploads/`, and a React Query powered feed (`FeedTimeline`) with client-side pagination plus a `PostComposer` handling uploads. Image resizing is deferred for a future enhancement.
 
 ### Phase 5 – Notifications & Polish
 

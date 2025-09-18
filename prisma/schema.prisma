@@ -29,6 +29,7 @@ model User {
   receivedRequests FriendRequest[] @relation("received_requests")
   friendshipsA     Friendship[]    @relation("friend_a")
   friendshipsB     Friendship[]    @relation("friend_b")
+  photos           Photo[]
 }
 
 model FriendRequest {
@@ -60,6 +61,19 @@ model Friendship {
   @@unique([userAId, userBId])
   @@index([userAId])
   @@index([userBId])
+}
+
+model Photo {
+  id        String   @id @default(cuid())
+  ownerId   String   @map("owner_id")
+  caption   String?
+  filePath  String   @map("file_path")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  owner User @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@index([ownerId])
+  @@index([createdAt])
 }
 
 model Account {
