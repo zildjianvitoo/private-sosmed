@@ -96,6 +96,7 @@ export function FeedTimeline({ initialPage }: FeedTimelineProps) {
                 fill
                 className="object-cover"
                 sizes="(min-width: 1024px) 720px, 100vw"
+                unoptimized
               />
             </div>
             <CardFooter className="p-6">
