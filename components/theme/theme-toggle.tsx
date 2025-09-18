@@ -48,11 +48,18 @@ function getInitialTheme(): ThemeValue {
 }
 
 export function ThemeToggle() {
-  const [theme, setTheme] = React.useState<ThemeValue>(() => getInitialTheme());
+  const [theme, setTheme] = React.useState<ThemeValue>('system');
+  const [mounted, setMounted] = React.useState(false);
 
   React.useEffect(() => {
+    setTheme(getInitialTheme());
+    setMounted(true);
+  }, []);
+
+  React.useEffect(() => {
+    if (!mounted) return;
     applyTheme(theme);
-  }, [theme]);
+  }, [theme, mounted]);
 
   React.useEffect(() => {
     const media = window.matchMedia('(prefers-color-scheme: dark)');
@@ -79,7 +86,7 @@ export function ThemeToggle() {
           aria-label="Toggle theme"
           className="rounded-full border border-border/60 bg-background/80 shadow-sm"
         >
-          <ActiveIcon className="h-5 w-5" />
+          {mounted ? <ActiveIcon className="h-5 w-5" /> : <span className="inline-block h-5 w-5" />}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">

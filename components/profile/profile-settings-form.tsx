@@ -56,7 +56,7 @@ interface ProfileSettingsFormProps {
 
 export function ProfileSettingsForm({ initialValues }: ProfileSettingsFormProps) {
   const router = useRouter();
-  const { update } = useSession();
+  const { update, data: session } = useSession();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(initialValues.imageUrl);
@@ -96,9 +96,11 @@ export function ProfileSettingsForm({ initialValues }: ProfileSettingsFormProps)
       });
 
       await update({
-        name: data.user.displayName,
-        picture: data.user.image ? `/${data.user.image}` : null,
-        handle: data.user.handle ?? null,
+        user: {
+          name: data.user.displayName,
+          image: data.user.image ? `/${data.user.image}` : null,
+          handle: data.user.handle ?? null,
+        },
       } as unknown as Record<string, unknown>);
 
       setCurrentImageUrl(data.user.image ? `/${data.user.image}` : null);
@@ -126,6 +128,14 @@ export function ProfileSettingsForm({ initialValues }: ProfileSettingsFormProps)
     };
   }, [previewUrl]);
 
+  useEffect(() => {
+    if (session?.user?.image) {
+      setCurrentImageUrl(
+        session.user.image.startsWith('/') ? session.user.image : `/${session.user.image}`,
+      );
+    }
+  }, [session?.user?.image]);
+
   const initials = initialValues.displayName
     .split(' ')
     .map((part) => part.charAt(0))
@@ -141,7 +151,11 @@ export function ProfileSettingsForm({ initialValues }: ProfileSettingsFormProps)
             {previewUrl ? (
               <AvatarImage src={previewUrl} alt={form.getValues('displayName')} />
             ) : currentImageUrl ? (
-              <AvatarImage src={currentImageUrl} alt={form.getValues('displayName')} />
+              <AvatarImage
+                key={currentImageUrl}
+                src={currentImageUrl}
+                alt={form.getValues('displayName')}
+              />
             ) : (
               <AvatarFallback>{initials || 'SP'}</AvatarFallback>
             )}
