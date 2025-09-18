@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { useSession } from 'next-auth/react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -59,7 +59,7 @@ export function ProfileSettingsForm({ initialValues }: ProfileSettingsFormProps)
   const { update } = useSession();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(initialValues.imageUrl);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const form = useForm<ProfileFormValues>({
@@ -85,7 +85,6 @@ export function ProfileSettingsForm({ initialValues }: ProfileSettingsFormProps)
     onSuccess: async (data) => {
       setErrorMessage(null);
       setAvatarFile(null);
-      setPreviewUrl(null);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -102,6 +101,8 @@ export function ProfileSettingsForm({ initialValues }: ProfileSettingsFormProps)
         handle: data.user.handle ?? null,
       } as unknown as Record<string, unknown>);
 
+      setCurrentImageUrl(data.user.image ? `/${data.user.image}` : null);
+
       router.refresh();
     },
     onError: (error: unknown) => {
@@ -109,19 +110,21 @@ export function ProfileSettingsForm({ initialValues }: ProfileSettingsFormProps)
     },
   });
 
-  useEffect(() => {
+  const previewUrl = useMemo(() => {
     if (!avatarFile) {
-      setPreviewUrl(null);
-      return;
+      return null;
     }
-
-    const url = URL.createObjectURL(avatarFile);
-    setPreviewUrl(url);
-
-    return () => {
-      URL.revokeObjectURL(url);
-    };
+    return URL.createObjectURL(avatarFile);
   }, [avatarFile]);
+
+  useEffect(() => {
+    if (!previewUrl) {
+      return undefined;
+    }
+    return () => {
+      URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
 
   const initials = initialValues.displayName
     .split(' ')
@@ -137,8 +140,8 @@ export function ProfileSettingsForm({ initialValues }: ProfileSettingsFormProps)
           <Avatar className="h-16 w-16 border border-border/50">
             {previewUrl ? (
               <AvatarImage src={previewUrl} alt={form.getValues('displayName')} />
-            ) : initialValues.imageUrl ? (
-              <AvatarImage src={initialValues.imageUrl} alt={form.getValues('displayName')} />
+            ) : currentImageUrl ? (
+              <AvatarImage src={currentImageUrl} alt={form.getValues('displayName')} />
             ) : (
               <AvatarFallback>{initials || 'SP'}</AvatarFallback>
             )}
@@ -242,6 +245,7 @@ export function ProfileSettingsForm({ initialValues }: ProfileSettingsFormProps)
                 bio: initialValues.bio ?? '',
               });
               setAvatarFile(null);
+              setCurrentImageUrl(initialValues.imageUrl);
               if (fileInputRef.current) {
                 fileInputRef.current.value = '';
               }
