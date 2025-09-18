@@ -25,6 +25,41 @@ model User {
 
   accounts Account[]
   sessions Session[]
+  sentRequests     FriendRequest[] @relation("sent_requests")
+  receivedRequests FriendRequest[] @relation("received_requests")
+  friendshipsA     Friendship[]    @relation("friend_a")
+  friendshipsB     Friendship[]    @relation("friend_b")
+}
+
+model FriendRequest {
+  id          String   @id @default(cuid())
+  requesterId String   @map("requester_id")
+  recipientId String   @map("recipient_id")
+  status      String   @default("PENDING")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  requester User @relation("sent_requests", fields: [requesterId], references: [id], onDelete: Cascade)
+  recipient User @relation("received_requests", fields: [recipientId], references: [id], onDelete: Cascade)
+
+  @@unique([requesterId, recipientId])
+  @@index([recipientId], map: "FriendRequest_recipient_idx")
+  @@index([requesterId], map: "FriendRequest_requester_idx")
+  @@index([requesterId, status])
+}
+
+model Friendship {
+  id        String   @id @default(cuid())
+  userAId   String   @map("user_a_id")
+  userBId   String   @map("user_b_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  userA User @relation("friend_a", fields: [userAId], references: [id], onDelete: Cascade)
+  userB User @relation("friend_b", fields: [userBId], references: [id], onDelete: Cascade)
+
+  @@unique([userAId, userBId])
+  @@index([userAId])
+  @@index([userBId])
 }
 
 model Account {

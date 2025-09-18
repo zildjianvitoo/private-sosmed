@@ -69,13 +69,16 @@ Phase 2 adds Prisma schema + baseline migration SQL (`prisma/migrations/0001_ini
 
 ### Phase 3 – Social Graph
 
-1. Add Prisma models for `FriendRequest` and `Friendship`; create migrations and update seeds.
-2. Implement API routes:
-   - `POST /api/friend-requests` (create or cancel),
-   - `PATCH /api/friend-requests/:id` (accept/decline),
-   - `GET /api/friends` (list mutual).
-3. Integrate React Query hooks for listing/searching users, sending requests, and optimistic acceptance.
-4. Render UI components: searchable user list with status badges, notification badge counting pending requests.
+- [x] Add Prisma models for `FriendRequest` and `Friendship`; create migrations and update seeds.
+- [x] Implement API routes:
+  - `POST /api/friend-requests` (create or auto-accept),
+  - `PATCH /api/friend-requests/:id` (accept/decline),
+  - `DELETE /api/friend-requests/:id` (cancel),
+  - `GET /api/friend-requests` and `GET /api/friends`.
+- [x] Integrate React Query hooks for listing/searching users, sending requests, and optimistic acceptance.
+- [x] Render UI components: searchable user list with status badges, notification badge counting pending requests.
+
+Phase 3 delivers a dedicated friends dashboard (`app/friends/page.tsx`) with React Query-powered mutations, new REST endpoints under `/api/friend-requests`, `/api/friends`, and `/api/users/search`, plus SQLite schema additions (`prisma/migrations/0002_social_graph/`). Seed data now provisions demo accounts with pre-populated friendships/requests (`npm run db:seed`).
 
 ### Phase 4 – Media Upload & Feed
 
