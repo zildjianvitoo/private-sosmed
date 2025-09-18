@@ -58,6 +58,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  const photoClient = getPhotoClient();
+
   const formData = await request.formData();
   const file = formData.get('file');
   const captionRaw = formData.get('caption');
