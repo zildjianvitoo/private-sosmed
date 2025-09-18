@@ -9,14 +9,6 @@ import { serializePhoto, photoUserSelect } from '@/lib/serializers/photo';
 
 export const runtime = 'nodejs';
 
-const userSummarySelect = {
-  id: true,
-  displayName: true,
-  handle: true,
-  image: true,
-  bio: true,
-};
-
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_MIME = new Set(['image/jpeg', 'image/png', 'image/webp']);
 
