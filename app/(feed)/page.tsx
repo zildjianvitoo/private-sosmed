@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Sparkles } from 'lucide-react';
 
 import { auth } from '@/auth';
-import prisma from '@/lib/prisma';
+import prisma, { getPhotoClient } from '@/lib/prisma';
 import { PostComposer } from '@/components/feed/post-composer';
 import { FeedTimeline } from '@/components/feed/feed-timeline';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -38,7 +38,8 @@ export default async function FeedPage() {
     .slice(0, 2)
     .toUpperCase();
 
-  const photos = await prisma.photo.findMany({
+  const photoClient = getPhotoClient();
+  const photos = await photoClient.findMany({
     take: PAGE_SIZE + 1,
     orderBy: { createdAt: 'desc' },
     include: {

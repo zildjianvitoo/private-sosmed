@@ -3,7 +3,7 @@ import { writeFile } from 'fs/promises';
 import path from 'path';
 
 import { auth } from '@/auth';
-import prisma from '@/lib/prisma';
+import prisma, { getPhotoClient } from '@/lib/prisma';
 import { ensureUploadsDir, generateUploadFileName, getPublicPath } from '@/lib/uploads';
 
 export const runtime = 'nodejs';
@@ -24,7 +24,8 @@ export async function GET(request: Request) {
   const limit = Math.min(Number(searchParams.get('limit')) || 9, 30);
   const cursor = searchParams.get('cursor') || undefined;
 
-  const photos = await prisma.photo.findMany({
+  const photoClient = getPhotoClient();
+  const photos = await photoClient.findMany({
     take: limit + 1,
     ...(cursor
       ? {
@@ -86,7 +87,7 @@ export async function POST(request: Request) {
 
   await writeFile(diskPath, buffer);
 
-  const photo = await prisma.photo.create({
+  const photo = await photoClient.create({
     data: {
       ownerId: session.user.id,
       caption,

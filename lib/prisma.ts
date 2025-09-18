@@ -15,3 +15,17 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 export default prisma;
+
+type PrismaWithPhoto = PrismaClient & {
+  photo: PrismaClient['photo'];
+};
+
+export function getPhotoClient(): PrismaWithPhoto['photo'] {
+  if (!('photo' in prisma)) {
+    throw new Error(
+      'Photo model not found on Prisma client. Run "npm run db:generate" after pulling the latest schema.',
+    );
+  }
+
+  return (prisma as PrismaWithPhoto).photo;
+}
