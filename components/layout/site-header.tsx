@@ -1,10 +1,9 @@
 'use client';
-
-import * as React from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
-import { Bell, LogOut, Menu, Plus, Search } from 'lucide-react';
+import { Bell, CloudCog, LogOut, Menu, Plus, Search } from 'lucide-react';
 
 import { ThemeToggle } from '@/components/theme/theme-toggle';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -31,7 +30,7 @@ const navigation = [
 
 export function SiteHeader() {
   const pathname = usePathname();
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
   const router = useRouter();
   const { data: session } = useSession();
   const user = session?.user;
@@ -42,7 +41,7 @@ export function SiteHeader() {
       ? `@${user.email.split('@')[0]}`
       : '@member';
 
-  const initials = React.useMemo(() => {
+  const initials = useMemo(() => {
     if (displayName) {
       const [first, second] = displayName.split(' ');
       return `${first?.charAt(0) ?? ''}${second?.charAt(0) ?? ''}`.toUpperCase() || 'SP';

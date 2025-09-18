@@ -2,12 +2,18 @@ import { NextResponse } from 'next/server';
 
 import { auth } from '@/auth';
 
-const publicRoutes = ['/login', '/register', '/uploads'];
+const publicRoutes = ['/login', '/register'];
+const assetRoutes = ['/uploads'];
 
 export default auth((req) => {
   const { nextUrl } = req;
   const isAuthenticated = Boolean(req.auth);
   const isPublicRoute = publicRoutes.some((route) => nextUrl.pathname.startsWith(route));
+  const isAssetRoute = assetRoutes.some((route) => nextUrl.pathname.startsWith(route));
+
+  if (isAssetRoute) {
+    return NextResponse.next();
+  }
 
   if (!isAuthenticated && !isPublicRoute) {
     const loginUrl = new URL('/login', nextUrl.origin);
