@@ -169,13 +169,9 @@ export function SiteHeader() {
                 3
               </Badge>
             </Button>
-            <Button variant="soft" className="hidden sm:inline-flex">
-              <Plus className="mr-2 h-4 w-4" />
-              New Post
-            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-2 py-1.5 pl-1 pr-3 text-left shadow-sm transition hover:border-primary/50">
+                <button className="flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-2 py-1 text-left shadow-sm transition hover:border-primary/50">
                   <Avatar className="h-9 w-9">
                     {user?.image ? (
                       <AvatarImage src={user.image} alt={displayName} />

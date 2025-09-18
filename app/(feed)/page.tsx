@@ -132,7 +132,10 @@ export default async function FeedPage() {
                 </CardDescription>
               </div>
             </div>
-            <Button variant="soft" className="w-full sm:w-auto">
+            <Button
+              variant="soft"
+              className="sm:w-auto sm:min-w-[140px] justify-center whitespace-nowrap"
+            >
               <Sparkles className="mr-2 h-4 w-4" />
               Inspire me
             </Button>
@@ -145,7 +148,7 @@ export default async function FeedPage() {
                   <Button variant="soft" size="icon" aria-label="Upload photo">
                     <Camera className="h-4 w-4" />
                   </Button>
-                  <Button>
+                  <Button className="whitespace-nowrap">
                     <Plus className="mr-2 h-4 w-4" />
                     Publish post
                   </Button>
