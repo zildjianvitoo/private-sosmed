@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { auth } from '@/auth';
 import prisma from '@/lib/prisma';
 import { normaliseFriendshipPair } from '@/lib/friendship';
+import { encodeNotificationMetadata } from '@/lib/notifications';
 
 const actionSchema = z.object({
   action: z.enum(['accept', 'decline']),
@@ -32,6 +33,14 @@ export async function PATCH(_request: Request, { params }: { params: { id: strin
   }
 
   const userId = session.user.id;
+  const currentUser = await prisma.user.findUnique({
+    where: { id: userId },
+    select: userSummarySelect,
+  });
+
+  if (!currentUser) {
+    return NextResponse.json({ error: 'User not found' }, { status: 404 });
+  }
   const requestRecord = await prisma.friendRequest.findUnique({
     where: { id: params.id },
   });
@@ -55,6 +64,18 @@ export async function PATCH(_request: Request, { params }: { params: { id: strin
       include: {
         requester: { select: userSummarySelect },
       },
+    });
+
+    await prisma.notification.updateMany({
+      where: {
+        userId,
+        readAt: null,
+        type: 'FRIEND_REQUEST',
+        metadata: {
+          contains: updated.id,
+        },
+      },
+      data: { readAt: new Date() },
     });
 
     return NextResponse.json({
@@ -84,6 +105,52 @@ export async function PATCH(_request: Request, { params }: { params: { id: strin
       include: {
         userA: { select: userSummarySelect },
         userB: { select: userSummarySelect },
+      },
+    });
+
+    await tx.notification.updateMany({
+      where: {
+        userId,
+        readAt: null,
+        type: 'FRIEND_REQUEST',
+        metadata: {
+          contains: updated.id,
+        },
+      },
+      data: { readAt: new Date() },
+    });
+
+    await tx.notification.upsert({
+      where: { id: `notif-${updated.id}-accepted` },
+      update: {
+        userId: updated.requesterId,
+        type: 'FRIEND_REQUEST',
+        metadata: encodeNotificationMetadata({
+          variant: 'request_accepted',
+          requestId: updated.id,
+          by: {
+            id: currentUser.id,
+            displayName: currentUser.displayName,
+            handle: currentUser.handle,
+            image: currentUser.image,
+          },
+        }),
+        readAt: null,
+      },
+      create: {
+        id: `notif-${updated.id}-accepted`,
+        userId: updated.requesterId,
+        type: 'FRIEND_REQUEST',
+        metadata: encodeNotificationMetadata({
+          variant: 'request_accepted',
+          requestId: updated.id,
+          by: {
+            id: currentUser.id,
+            displayName: currentUser.displayName,
+            handle: currentUser.handle,
+            image: currentUser.image,
+          },
+        }),
       },
     });
 

@@ -3,11 +3,11 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
-import { Bell, CloudCog, LogOut, Menu, Plus, Search } from 'lucide-react';
+import { LogOut, Menu, Plus, Search } from 'lucide-react';
 
+import { NotificationsMenu } from '@/components/notifications/notifications-menu';
 import { ThemeToggle } from '@/components/theme/theme-toggle';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -159,15 +159,7 @@ export function SiteHeader() {
 
           <div className="flex flex-1 items-center justify-end gap-2 sm:gap-3">
             <ThemeToggle />
-            <Button variant="ghost" size="icon" aria-label="Notifications" className="relative">
-              <Bell className="h-5 w-5" />
-              <Badge
-                variant="destructive"
-                className="absolute -right-1 -top-1 h-5 min-w-[1.25rem] px-1 text-[11px]"
-              >
-                3
-              </Badge>
-            </Button>
+            <NotificationsMenu />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-2 py-1 text-left shadow-sm transition hover:border-primary/50">

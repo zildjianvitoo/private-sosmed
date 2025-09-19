@@ -30,6 +30,7 @@ model User {
   friendshipsA     Friendship[]    @relation("friend_a")
   friendshipsB     Friendship[]    @relation("friend_b")
   photos           Photo[]
+  notifications   Notification[]
 }
 
 model FriendRequest {
@@ -74,6 +75,20 @@ model Photo {
 
   @@index([ownerId])
   @@index([createdAt])
+}
+
+model Notification {
+  id        String            @id @default(cuid())
+  userId    String            @map("user_id")
+  type      String
+  metadata  String?
+  readAt    DateTime?         @map("read_at")
+  createdAt DateTime          @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+  @@index([type])
 }
 
 model Account {

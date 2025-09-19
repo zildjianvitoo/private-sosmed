@@ -120,7 +120,7 @@ async function main() {
   }
 
   // Create a pending request from Mira to Demo if not present
-  await prisma.friendRequest.upsert({
+  const miraToDemoRequest = await prisma.friendRequest.upsert({
     where: {
       requesterId_recipientId: {
         requesterId: mira.id,
@@ -137,7 +137,7 @@ async function main() {
   });
 
   // Create outgoing request from Demo to Arya
-  await prisma.friendRequest.upsert({
+  const demoToAryaRequest = await prisma.friendRequest.upsert({
     where: {
       requesterId_recipientId: {
         requesterId: demo.id,
@@ -194,6 +194,85 @@ async function main() {
       },
     });
   }
+
+  const miraIncomingMeta = JSON.stringify({
+    variant: 'incoming_request',
+    requestId: miraToDemoRequest.id,
+    from: {
+      id: mira.id,
+      displayName: mira.displayName,
+      handle: mira.handle,
+      image: mira.image,
+    },
+  });
+
+  await prisma.notification.upsert({
+    where: { id: 'notif-demo-incoming-mira' },
+    update: {
+      metadata: miraIncomingMeta,
+      readAt: null,
+    },
+    create: {
+      id: 'notif-demo-incoming-mira',
+      userId: demo.id,
+      type: 'FRIEND_REQUEST',
+      metadata: miraIncomingMeta,
+    },
+  });
+
+  const demoIncomingMeta = JSON.stringify({
+    variant: 'incoming_request',
+    requestId: demoToAryaRequest.id,
+    from: {
+      id: demo.id,
+      displayName: demo.displayName,
+      handle: demo.handle,
+      image: demo.image,
+    },
+  });
+
+  await prisma.notification.upsert({
+    where: { id: 'notif-arya-incoming-demo' },
+    update: {
+      metadata: demoIncomingMeta,
+      readAt: null,
+    },
+    create: {
+      id: 'notif-arya-incoming-demo',
+      userId: arya.id,
+      type: 'FRIEND_REQUEST',
+      metadata: demoIncomingMeta,
+    },
+  });
+
+  const kaiUploadMeta = JSON.stringify({
+    variant: 'friend_upload',
+    photoId: 'photo-kai-architecture',
+    photo: {
+      caption: 'Neon reflections downtown.',
+      filePath: 'uploads/kai-neon.jpg',
+    },
+    user: {
+      id: kai.id,
+      displayName: kai.displayName,
+      handle: kai.handle,
+      image: kai.image,
+    },
+  });
+
+  await prisma.notification.upsert({
+    where: { id: 'notif-demo-upload-kai-neon' },
+    update: {
+      metadata: kaiUploadMeta,
+      readAt: null,
+    },
+    create: {
+      id: 'notif-demo-upload-kai-neon',
+      userId: demo.id,
+      type: 'UPLOAD',
+      metadata: kaiUploadMeta,
+    },
+  });
 }
 
 main()

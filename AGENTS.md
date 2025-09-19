@@ -90,17 +90,17 @@ Suggested connections now filter out existing friends and rank prospects by mutu
 - [x] Build feed API returning paginated photo cards (cursor-based on `createdAt`).
 - [x] Build React Query hooks/components for upload form (with optimistic preview) and infinite feed list using shadcn cards.
 
-Phase 4 ships local media uploads via `/api/photos` with validation, the Prisma-backed `Photo` model/migration (`prisma/migrations/0003_media_feed/`), seeded sample photos stored under `public/uploads/`, and a React Query powered feed (`FeedTimeline`) with client-side pagination plus a `PostComposer` handling uploads. Image resizing is deferred for a future enhancement.
-
-The `/profile` settings page lets members update display name, handle, bio, and avatar with shadcn forms hitting `/api/profile`.
+Phase 4 ships local media uploads via `/api/photos` with validation, the Prisma-backed `Photo` model/migration (`prisma/migrations/0003_media_feed/`), seeded sample photos stored under `public/uploads/`, and a React Query powered feed (`FeedTimeline`) with client-side pagination plus a `PostComposer` handling uploads. Image resizing is deferred for a future enhancement. We also refreshed the member profile experience: `/profile` now highlights bio, friend count, and a responsive 3 × 3 photo grid, while the profile editing form moved to a dedicated `/settings` route.
 
 ### Phase 5 – Notifications & Polish
 
-1. Create `Notification` model + queries for pending friend requests and confirmations.
-2. Surface notifications in header dropdown and mark-as-read mutation.
-3. Add user profile page with photo gallery grid, friend list.
-4. Implement responsive adjustments (mobile tabs, gesture-friendly buttons) and accessibility audit.
-5. Write unit and integration tests (`vitest` + `@testing-library/react`), plus Playwright e2e covering core flow.
+- [x] Create `Notification` model + queries for pending friend requests and confirmations.
+- [x] Surface notifications in header dropdown and mark-as-read mutation.
+- [x] Add user profile page with photo gallery grid, friend list.
+- [x] Implement responsive adjustments (mobile tabs, gesture-friendly buttons) and accessibility audit.
+- [ ] Write unit and integration tests (`vitest` + `@testing-library/react`), plus Playwright e2e covering core flow.
+
+Phase 5 introduces a SQLite-backed `Notification` table (`prisma/migrations/0004_notifications/`) with seed data, REST endpoints under `/api/notifications`, and mutation hooks that generate alerts whenever friend requests or uploads occur. The site header now ships a live React Query-powered notifications tray with mark-as-read semantics, while `/profile/[id]` renders public-facing profile cards that reuse the refreshed overview component. Feed uploads broadcast to friends, and profile/settings flows share the same responsive layout refinements.
 
 ### Phase 6 – Deployment & Documentation
 

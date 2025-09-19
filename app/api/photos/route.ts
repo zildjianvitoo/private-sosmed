@@ -6,6 +6,7 @@ import { auth } from '@/auth';
 import prisma, { getPhotoClient } from '@/lib/prisma';
 import { ensureUploadsDir, generateUploadFileName, getPublicPath } from '@/lib/uploads';
 import { serializePhoto, photoUserSelect } from '@/lib/serializers/photo';
+import { encodeNotificationMetadata } from '@/lib/notifications';
 
 export const runtime = 'nodejs';
 
@@ -52,6 +53,19 @@ export async function POST(request: Request) {
   }
 
   const photoClient = getPhotoClient();
+  const owner = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: {
+      id: true,
+      displayName: true,
+      handle: true,
+      image: true,
+    },
+  });
+
+  if (!owner) {
+    return NextResponse.json({ error: 'User not found' }, { status: 404 });
+  }
 
   const formData = await request.formData();
   const file = formData.get('file');
@@ -92,6 +106,62 @@ export async function POST(request: Request) {
       owner: { select: photoUserSelect },
     },
   });
+
+  const friendships = await prisma.friendship.findMany({
+    where: {
+      OR: [{ userAId: session.user.id }, { userBId: session.user.id }],
+    },
+    select: {
+      userAId: true,
+      userBId: true,
+    },
+  });
+
+  if (friendships.length > 0) {
+    const friendIds = new Set<string>();
+    friendships.forEach((friendship) => {
+      const friendId =
+        friendship.userAId === session.user.id ? friendship.userBId : friendship.userAId;
+      friendIds.add(friendId);
+    });
+
+    if (friendIds.size > 0) {
+      const metadata = encodeNotificationMetadata({
+        variant: 'friend_upload',
+        photoId: photo.id,
+        photo: {
+          caption: photo.caption,
+          filePath: photo.filePath,
+        },
+        user: {
+          id: owner.id,
+          displayName: owner.displayName,
+          handle: owner.handle,
+          image: owner.image,
+        },
+      });
+
+      await Promise.all(
+        Array.from(friendIds).map((friendId) =>
+          prisma.notification.upsert({
+            where: { id: `notif-${friendId}-${photo.id}-upload` },
+            update: {
+              userId: friendId,
+              type: 'UPLOAD',
+              metadata,
+              readAt: null,
+            },
+            create: {
+              id: `notif-${friendId}-${photo.id}-upload`,
+              userId: friendId,
+              type: 'UPLOAD',
+              metadata,
+            },
+          }),
+        ),
+      );
+    }
+  }
 
   return NextResponse.json({ photo: serializePhoto(photo) }, { status: 201 });
 }

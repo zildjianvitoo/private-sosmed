@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { auth } from '@/auth';
 import prisma from '@/lib/prisma';
 import { normaliseFriendshipPair } from '@/lib/friendship';
+import { encodeNotificationMetadata } from '@/lib/notifications';
 
 const userSummarySelect = {
   id: true,
@@ -61,6 +62,15 @@ export async function POST(request: Request) {
   }
 
   const userId = session.user.id;
+  const currentUser = await prisma.user.findUnique({
+    where: { id: userId },
+    select: userSummarySelect,
+  });
+
+  if (!currentUser) {
+    return NextResponse.json({ error: 'User not found.' }, { status: 404 });
+  }
+
   const json = await request.json().catch(() => null);
   const parsed = createRequestSchema.safeParse(json);
 
@@ -105,17 +115,68 @@ export async function POST(request: Request) {
   });
 
   if (existingInverse && existingInverse.status === 'PENDING') {
-    const friendship = await prisma.$transaction(async (tx) => {
-      await tx.friendRequest.update({
+    const { friendship } = await prisma.$transaction(async (tx) => {
+      const updatedRequest = await tx.friendRequest.update({
         where: { id: existingInverse.id },
         data: { status: 'ACCEPTED' },
+        include: {
+          requester: { select: userSummarySelect },
+        },
       });
 
-      return tx.friendship.upsert({
+      const friendshipRecord = await tx.friendship.upsert({
         where: { userAId_userBId: pair },
         update: {},
         create: pair,
       });
+
+      await tx.notification.updateMany({
+        where: {
+          userId,
+          readAt: null,
+          type: 'FRIEND_REQUEST',
+          metadata: {
+            contains: updatedRequest.id,
+          },
+        },
+        data: { readAt: new Date() },
+      });
+
+      await tx.notification.upsert({
+        where: { id: `notif-${updatedRequest.id}-accepted` },
+        update: {
+          userId: updatedRequest.requesterId,
+          type: 'FRIEND_REQUEST',
+          metadata: encodeNotificationMetadata({
+            variant: 'request_accepted',
+            requestId: updatedRequest.id,
+            by: {
+              id: currentUser.id,
+              displayName: currentUser.displayName,
+              handle: currentUser.handle,
+              image: currentUser.image,
+            },
+          }),
+          readAt: null,
+        },
+        create: {
+          id: `notif-${updatedRequest.id}-accepted`,
+          userId: updatedRequest.requesterId,
+          type: 'FRIEND_REQUEST',
+          metadata: encodeNotificationMetadata({
+            variant: 'request_accepted',
+            requestId: updatedRequest.id,
+            by: {
+              id: currentUser.id,
+              displayName: currentUser.displayName,
+              handle: currentUser.handle,
+              image: currentUser.image,
+            },
+          }),
+        },
+      });
+
+      return { friendship: friendshipRecord };
     });
 
     return NextResponse.json(
@@ -157,6 +218,40 @@ export async function POST(request: Request) {
     },
     include: {
       recipient: { select: userSummarySelect },
+    },
+  });
+
+  await prisma.notification.upsert({
+    where: { id: `notif-${requestRecord.id}-incoming` },
+    update: {
+      userId: recipientId,
+      type: 'FRIEND_REQUEST',
+      metadata: encodeNotificationMetadata({
+        variant: 'incoming_request',
+        requestId: requestRecord.id,
+        from: {
+          id: currentUser.id,
+          displayName: currentUser.displayName,
+          handle: currentUser.handle,
+          image: currentUser.image,
+        },
+      }),
+      readAt: null,
+    },
+    create: {
+      id: `notif-${requestRecord.id}-incoming`,
+      userId: recipientId,
+      type: 'FRIEND_REQUEST',
+      metadata: encodeNotificationMetadata({
+        variant: 'incoming_request',
+        requestId: requestRecord.id,
+        from: {
+          id: currentUser.id,
+          displayName: currentUser.displayName,
+          handle: currentUser.handle,
+          image: currentUser.image,
+        },
+      }),
     },
   });
 
